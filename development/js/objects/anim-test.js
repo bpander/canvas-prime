@@ -39,11 +39,30 @@ cp.template.AnimTest = cp.template.Entity.extend({
         
         // Set the current animation, can also be changed in the update
         this.animSet = this.animPop;
+        
+        cp.input.mouse.bind('left', 'mouse1');
     },
     
     update: function() {
-        // Draws the actual hitbox of the object with a red box
-        cp.ctx.fillStyle = '#f00';
+        
+        // If a user clicks, check to see if they're clicking on the object
+        if (cp.input.mouse.down('mouse1')) {
+            if (cp.input.mouse.over(this)) {
+                console.log('clicked');
+            } else {
+                console.log('not clicked');
+            }
+        }
+        
+        // If the user is moused over, the hit box will be blue, otherwise it'll be red
+        if (cp.input.mouse.over(this)) {
+            var fillStyle = '#00f';
+        } else {
+            var fillStyle = '#f00';
+        }
+
+        // Draws the actual hitbox of the object
+        cp.ctx.fillStyle = fillStyle;
         cp.ctx.fillRect(this.x, this.y, this.width, this.height);
         
         // Calls parent function and necessary animation update checks

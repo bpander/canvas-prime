@@ -146,6 +146,7 @@ cp.core = {
             
             // Set key monitoring as appropriate
             cp.input.monitor();
+            cp.input.mouse.monitor();
         
         // Loading logic
         } else {

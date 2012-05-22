@@ -27,6 +27,9 @@ cp.input = {
         // work correctly?
         window.addEventListener('keydown', this.store, true);
         window.addEventListener('keyup', this.remove, true);
+        window.addEventListener('mousedown', this.mouse.store, true);
+        window.addEventListener('mouseup', this.mouse.remove, true);
+        window.addEventListener('mousemove', this.mouse.updatePosition, true);
     },
     
     // Stores the current key event in an array
@@ -242,27 +245,148 @@ cp.input = {
     
     // Special functions relative to the mouse
     // Note: Currently a work in progress (WIP)
+    // TODO: There has to be a way to combine some of cp.input with cp.input.mouse
+
     mouse: {
+        
+        isMoving: false,
+        
+        oldX: 0,
+        oldY: 0,
+        
+        active: {},
+        
+        storage: {},
+        
+        // Marks the current key for deletion
+        remove: function(e) {
+            cp.input.mouse.storage[e.button] = 'remove';
+        },
+        
+        // Stores the current key event in an array
+        store: function(e) {
+
+            // Get current status of existing keyCode (if present)
+            var status = cp.input.mouse.storage[e.button];
+            
+            // Set as active only if the existing key is not already set
+            if ( ! status ) {
+                cp.input.mouse.storage[e.button] = 'active';
+            }
+            
+        },
+
+        // Monitors active keys and modifies them as necessary from each frame
+        // Note: This loop could be better optimized
+        monitor: function() {
+            //console.log(this.storage);
+            
+            // Loop through all mouse objects and modify as necessary
+            for ( var button in this.storage ) {
+                // Cache active object value for comparison only, cannot be set
+                var item = this.storage[button];
+                
+                // If the item has been recently pressed set it to the down state
+                if (item === 'active') {
+                    this.storage[button] = 'down';
+                    
+                // After down has been set for one frame, change it to pressed
+                } else if (item === 'down') {
+                    this.storage[button] = 'pressed';
+                    
+                // After up has been set, change the status to delete
+                } else if (item === 'remove') {
+                    this.storage[button] = 'up';
+                    
+                // After a full frame has passed, delete the item out of existence
+                } else if (item === 'up') {
+                    delete this.storage[button];
+                }
+            }
+            
+            // Check to see if the mouse has stopped moving
+            if (this.isMoving && this.oldX === this.x && this.oldY === this.y) {
+                this.isMoving = false;
+            } else {
+                this.oldX = this.x;
+                this.oldY = this.y;
+            }
+            
+        },
+        
         library: {
             left: 0,
             middle: 1,
             right: 2
         },
         
-        // Return mousedown, up, click, or dblclick
+        bind: function(button, tag) {
+            
+            // Convert key name to button value
+            button = this.library[button];
+            
+            // Store button value for reference later
+            this.active[tag] = button;
+        },
+        
+        down: function(tag) {
+            // Test if button was pressed
+            if (this.storage[this.active[tag]] === 'down') {
+                return true;
+            } else {
+                return false;
+            }
+        },
+        
+        up: function(tag) {
+            // Test if button was pressed
+            if (this.storage[this.active[tag]] === 'up') {
+                return true;
+            } else {
+                return false;
+            }
+        },
+        
+        press: function(tag) {
+            // Cache state of storage item
+            var state = this.storage[this.active[tag]];
+            
+            // Return true if anything exceupt up is pressed to prevent logic overlap
+            if (state && state !== 'up') {
+                return true;
+            } else {
+                return false;
+            }
+        },
+        
+        // Gets called on mousemove
+        updatePosition: function(e) {
+            cp.input.mouse.isMoving = true;
+            
+            var offset = cp.core.canvas.getBoundingClientRect();
+            cp.input.mouse.x = e.pageX - offset.left;
+            cp.input.mouse.y = e.pageY - offset.top;
+        },
+        
+        // Returns a boolean whether or not the mouse currently is moving
+        move: function() {
+            return this.isMoving;
+        },
+        
+        // Accepts an object and returns true if the mouse is currently over it
+        // TODO: Take into account z-index
+        over: function(obj) {
+            return (this.x > obj.x &&
+                this.x < obj.x + obj.width &&
+                this.y > obj.y &&
+                this.y < obj.y + obj.height);
+        },
+        
+        // Return mousemove, mousedown, up, click, or dblclick
         event: function() {
             
         },
-        
-        // Returns current x coordinate relative to the Canvas window
-        x: function() {
-            
-        },
-        
-        // Returns current y coordinate relative to the Canvas window
-        y: function() {
-            
-        }
+    
     }
 
 };
