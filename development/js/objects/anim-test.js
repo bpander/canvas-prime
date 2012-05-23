@@ -41,6 +41,11 @@ cp.template.AnimTest = cp.template.Entity.extend({
         this.animSet = this.animPop;
         
         cp.input.mouse.bind('left', 'mouse1');
+        this.photonBlast = new cp.audio.Sound('photon.wav');
+        
+        //this.deano = new cp.audio.Sound('kick-in-the-head.mp3');
+        //this.deano.setLocation(40).setVolume(0.9).play();
+
     },
     
     update: function() {
@@ -49,6 +54,8 @@ cp.template.AnimTest = cp.template.Entity.extend({
         if (cp.input.mouse.down('mouse1')) {
             if (cp.input.mouse.over(this)) {
                 console.log('clicked');
+                var photonBlast= new cp.audio.Sound(this.photonBlast.name);
+                photonBlast.setVolume(0.5).play();
             } else {
                 console.log('not clicked');
             }
